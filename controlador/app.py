@@ -30,8 +30,12 @@ class App:
         )
 
         vista_menu = VistaMenu()
-        self.controlador_menu = ControladorMenu(MenuModelo(TITULO_JUEGO, OPCIONES_MENU), vista_menu)
-        self.controlador_pausa = ControladorMenu(MenuModelo(TITULO_PAUSA, OPCIONES_PAUSA), vista_menu)
+        self.controlador_menu = ControladorMenu(
+            MenuModelo(TITULO_JUEGO, OPCIONES_MENU), vista_menu, self.detector_de_mano
+        )
+        self.controlador_pausa = ControladorMenu(
+            MenuModelo(TITULO_PAUSA, OPCIONES_PAUSA), vista_menu, self.detector_de_mano
+        )
         self.controlador_juego = ControladorJuego(
             EstadoJuego(), VistaJuego(), self.detector_de_mano, aviso_camara
         )
