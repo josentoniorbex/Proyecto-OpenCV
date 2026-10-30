@@ -237,14 +237,14 @@ def pintar_mano(imagen, caja_mano):
 # CLASE PRINCIPAL (la usa el controlador)
 # =============================================================================
 
-class SeguidorMano:
+class DetectorDeMano:
     """Lee la webcam en un hilo y guarda la última posición de la mano.
 
     Uso:
-        seguidor = SeguidorMano()
-        if seguidor.iniciar():
-            posicion, abierta = seguidor.obtener()   # posicion = (x, y) entre 0 y 1, o None
-        seguidor.detener()
+        detector_mano = DetectorDeMano()
+        if detector_mano.iniciar():
+            posicion, abierta = detector_mano.obtener()   # posicion = (x, y) entre 0 y 1, o None
+        detector_mano.detener()
     """
 
     def __init__(self, indice_camara=INDICE_CAMARA):

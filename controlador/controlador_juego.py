@@ -81,12 +81,18 @@ class ControladorJuego:
         objetivo = (x_normalizada * ANCHO_VIRTUAL, y_normalizada * ALTO_VIRTUAL)
         return objetivo, abierta, ("Mano abierta" if abierta else "Mano cerrada")
 
-    def calcularFPS(self,ahora):
+    def calcularFPS(self, ahora):
+        """Calcula los FPS reales suavizados mediante un filtro exponencial."""
         if self._ultimo_frame_fps is not None:
-            periodo = ahora - self._ultimo_frame_fps
-        if periodo > 0:
-            fps_actual = 1 / periodo
-            self._fps = fps_actual if self._fps == 0 else 0.8 * self._fps + 0.2 * fps_actual
+            delta = ahora - self._ultimo_frame_fps
+            if delta > 0:
+                fps_instantaneo = 1 / delta
+                # Para que no varie mucho y me de un derrame visual
+                # 80% de historia y 20% fps generado
+                if self._fps == 0:
+                    self._fps = fps_instantaneo
+                else:
+                    self._fps = 0.8 * self._fps + 0.2 * fps_instantaneo 
         self._ultimo_frame_fps = ahora
 
     # ---------- bucle ----------

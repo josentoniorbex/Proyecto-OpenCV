@@ -15,7 +15,7 @@ from vista.vista_menu import VistaMenu
 from vista.vista_juego import VistaJuego
 from controlador.controlador_menu import ControladorMenu
 from controlador.controlador_juego import ControladorJuego
-from vision.seguidor_mano import SeguidorMano
+from vision.seguidor_mano import DetectorDeMano
 
 MENU = "MENU"
 JUGANDO = "JUGANDO"
@@ -46,7 +46,7 @@ class App:
     # ---------- preparación ----------
     @staticmethod
     def _crear_detector_de_mano():
-        detector_de_mano = SeguidorMano()
+        detector_de_mano = DetectorDeMano()
         if detector_de_mano.iniciar():
             return detector_de_mano, None
         print("Se jugará solo con el teclado (WASD).")
