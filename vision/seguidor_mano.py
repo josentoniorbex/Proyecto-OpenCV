@@ -1,4 +1,4 @@
-# SEGUIMIENTO DE LA MANO (antes camara.py)
+# SEGUIMIENTO DE LA MANO
 # Corre en un hilo propio y solo guarda el último resultado. NO abre ventanas.
 #
 # Cómo funciona (cada paso es una función o proceso):
