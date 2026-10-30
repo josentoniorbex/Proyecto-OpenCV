@@ -1,6 +1,6 @@
 import time
 
-from config import (ANCHO_VIRTUAL, TECLA_ESC, ESC_PULSADO, MARGEN_MANO,
+from config import (ANCHO_VIRTUAL, ALTO_VIRTUAL, TECLA_ESC, ESC_PULSADO, MARGEN_MANO,
                     TECLAS_MOVIMIENTO, TIEMPO_TECLA_ACTIVA)
 
 
@@ -60,7 +60,7 @@ class ControladorJuego:
         return dx, dy
 
     def _leer_mano(self):
-        """Devuelve (x objetivo virtual o None si no hay mano, abierta, texto de estado)."""
+        """Devuelve ((x, y) objetivo virtual o None, abierta, texto de estado)."""
         if self.seguidor_mano is None:
             return None, False, f"Sin camara: {self.aviso_camara}"
         if self.seguidor_mano.error:
@@ -73,7 +73,9 @@ class ControladorJuego:
         # Estiramos [MARGEN, 1 - MARGEN] a [0, 1] para poder llegar a los bordes
         x_normalizada = (posicion[0] - MARGEN_MANO) / (1 - 2 * MARGEN_MANO)
         x_normalizada = min(max(x_normalizada, 0.0), 1.0)
-        return x_normalizada * ANCHO_VIRTUAL, abierta, ("Mano abierta" if abierta else "Mano cerrada")
+        y_normalizada = min(max(posicion[1], 0.0), 1.0)
+        objetivo = (x_normalizada * ANCHO_VIRTUAL, y_normalizada * ALTO_VIRTUAL)
+        return objetivo, abierta, ("Mano abierta" if abierta else "Mano cerrada")
 
     # ---------- bucle ----------
     def actualizar(self, ancho_ventana, alto_ventana):
@@ -88,7 +90,7 @@ class ControladorJuego:
 
         if not self.estado.pausado:
             if hay_mano:                                   # 1) si hay mano, manda la mano
-                self.estado.nave.mover_hacia(objetivo_mano)
+                self.estado.nave.mover_hacia(*objetivo_mano)
             else:                                          # 2) si no, WASD
                 dx, dy = self._direccion_teclado(ahora)
                 if dx or dy:
