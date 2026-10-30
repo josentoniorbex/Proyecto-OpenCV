@@ -1,16 +1,20 @@
 import math
+from pathlib import Path
 
 from config import (ANCHO_VIRTUAL, ALTO_VIRTUAL, ANCHO_NAVE, ALTO_NAVE, VELOCIDAD_NAVE,
-                    VELOCIDAD_TECLADO, MARGEN_INFERIOR_NAVE, COLOR_NAVE)
-from modelo.entidad import Entidad
+                    VELOCIDAD_TECLADO, MARGEN_INFERIOR_NAVE, COLOR_NAVE, DIRECTORIO_ASSETS)
+from modelo.entidad import EntidadConImagen
 
 
-class Nave(Entidad):
+class Nave(EntidadConImagen):
     """Datos y reglas de la nave. Todo en unidades virtuales. No dibuja nada."""
 
     def __init__(self):
+        # Ruta, le indico, la ruta del archivo, parent sería 0 modelo y 1 proyecto, a partir de ahí entro
+        imagenPath = DIRECTORIO_ASSETS / "nave01.png" 
+        ruta_imagen = str(imagenPath)
         super().__init__(0, ALTO_VIRTUAL - ALTO_NAVE - MARGEN_INFERIOR_NAVE,
-                         ANCHO_NAVE, ALTO_NAVE, COLOR_NAVE)
+                         ANCHO_NAVE, ALTO_NAVE, COLOR_NAVE, ruta_imagen)
         self.reiniciar()
 
     def reiniciar(self):

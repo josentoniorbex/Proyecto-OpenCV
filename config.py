@@ -1,6 +1,8 @@
 # CONFIGURACIÓN GLOBAL
 # Aquí van todas las constantes del proyecto, para tocarlas desde un solo sitio.
 
+from pathlib import Path
+
 # ---------------- Campo de juego (unidades virtuales, NO son píxeles) ----------------
 ANCHO_VIRTUAL = 1280
 ALTO_VIRTUAL = 720
@@ -75,3 +77,5 @@ MARGEN_MANO = 0.15         # la mano se mueve en [0.15, 0.85] del ancho de la c�
 
 COLOR_CURSOR_NORMAL = (0, 0, 255)
 COLOR_CURSOR_PRESIONADO = (0, 165, 255)
+
+DIRECTORIO_ASSETS = Path(__file__).resolve().parent / "assets"
