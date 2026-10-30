@@ -215,7 +215,10 @@ def calcular_solidez(mascara_mano):
     # Huecos profundos entre dedos (valles respecto a la "goma elástica")
     _, _, ancho, alto = cv2.boundingRect(contorno)
     profundidad_minima = 0.1 * max(ancho, alto)
+    # rodea como por una "goma elastica" todos los contornos, puntos.
     indices_envolvente = cv2.convexHull(contorno, returnPoints=False)
+    # compara la silueta de la mano con la "goma elástica" (Convex Hull) que la envuelve por fuera,
+    # y mide la distancia de los agujeros hacia adentro.
     defectos = cv2.convexityDefects(contorno, indices_envolvente)
 
     huecos = 0
