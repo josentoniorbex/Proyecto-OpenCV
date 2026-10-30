@@ -50,6 +50,12 @@ VELOCIDAD_NAVE = 1500.0    # unidades virtuales por segundo (lo rápido que pers
 VELOCIDAD_TECLADO = 600.0  # unidades virtuales por segundo con WASD
 MARGEN_INFERIOR_NAVE = 20
 
+# ---------------- Disparos ----------------
+ANCHO_BALA = 14
+ALTO_BALA = 28
+VELOCIDAD_BALA = 900.0
+INTERVALO_DISPARO = 0.25
+
 # ---------------- Botones de los menús (unidades virtuales) ----------------
 ANCHO_BOTON = 400
 ALTO_BOTON = 80

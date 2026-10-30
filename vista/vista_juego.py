@@ -5,6 +5,7 @@ from config import COLOR_FONDO_JUEGO
 from modelo.entidad import EntidadConImagen
 from vista.ventana import escalar_punto, escalar_rect, escalar_longitud
 
+DEBUG=False
 
 class VistaJuego:
     """Dibuja el EstadoJuego con el tamaño real de la ventana. No cambia ningún dato."""
@@ -22,10 +23,23 @@ class VistaJuego:
             else:
                 self._dibujar_rect(canvas, entidad, ancho_ventana, alto_ventana)
 
+        if DEBUG:
+            self.dibujar_debug(canvas, estado, ancho_ventana, alto_ventana)
+
         for numero, linea in enumerate(lineas_info):
             self._dibujar_texto(canvas, linea, (20, 40 + 40 * numero), 0.9, (0, 255, 0),
                                 ancho_ventana, alto_ventana)
         return canvas
+
+    @staticmethod
+    def dibujar_debug(canvas, estado, ancho_ventana, alto_ventana):
+        """Dibuja el contorno verde de los límites de todas las entidades."""
+        for entidad in estado.entidades():
+            esquina_1, esquina_2 = escalar_rect(
+                entidad.x, entidad.y, entidad.ancho, entidad.alto,
+                ancho_ventana, alto_ventana,
+            )
+            cv2.rectangle(canvas, esquina_1, esquina_2, (0, 255, 0), 2)
 
     def _dibujar_imagen(self, canvas, entidad, ancho_ventana, alto_ventana):
         esquina_1_entidad_pantalla_real, esquina_2_entidad_pantalla_real = escalar_rect(entidad.x, entidad.y, entidad.ancho, entidad.alto,

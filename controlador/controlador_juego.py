@@ -1,7 +1,8 @@
 import time
 
 from config import (ANCHO_VIRTUAL, ALTO_VIRTUAL, TECLA_ESC, ESC_PULSADO, MARGEN_MANO,
-                    TECLAS_MOVIMIENTO, TIEMPO_TECLA_ACTIVA)
+                    TECLAS_MOVIMIENTO, TIEMPO_TECLA_ACTIVA, INTERVALO_DISPARO,
+                    TECLA_ESPACIO)
 
 
 class ControladorJuego:
@@ -22,6 +23,8 @@ class ControladorJuego:
         self._fps = 0.0
         self._ultima_pulsacion = {direccion: -1.0 for direccion in TECLAS_MOVIMIENTO}
         self._accion = None
+        self._disparo_tecla_pendiente = False
+        self._ultimo_disparo = float("-inf")
 
     # ---------- ciclo de la partida ----------
     def reiniciar(self):
@@ -31,9 +34,12 @@ class ControladorJuego:
         self._fps = 0.0
         self._ultima_pulsacion = {direccion: -1.0 for direccion in TECLAS_MOVIMIENTO}
         self._accion = None
+        self._disparo_tecla_pendiente = False
+        self._ultimo_disparo = float("-inf")
 
     def pausar(self):
         self.estado.pausado = True
+        self._disparo_tecla_pendiente = False
 
     def reanudar(self):
         self.estado.pausado = False
@@ -43,13 +49,22 @@ class ControladorJuego:
     def tecla(self, tecla):
         if tecla == TECLA_ESC:
             self._accion = ESC_PULSADO
+        elif tecla == TECLA_ESPACIO:
+            self._disparo_tecla_pendiente = True
         else:
             for direccion, teclas in TECLAS_MOVIMIENTO.items():
                 if tecla in teclas:
                     self._ultima_pulsacion[direccion] = time.perf_counter()
 
     def raton(self, evento, x_virtual, y_virtual):
-        pass        # el juego no usa el ratón
+        pass
+
+    def _consumir_disparo_tecla(self, ahora):
+        if self._disparo_tecla_pendiente \
+                and ahora - self._ultimo_disparo >= INTERVALO_DISPARO:
+            self._disparo_tecla_pendiente = False
+            return True
+        return False
 
     def consumir_accion(self):
         accion, self._accion = self._accion, None
@@ -103,7 +118,7 @@ class ControladorJuego:
         self._tiempo_anterior = ahora
         self.calcularFPS(ahora)
 
-        objetivo_mano, _, texto_camara = self._leer_mano()
+        objetivo_mano, mano_abierta, texto_camara = self._leer_mano()
         hay_mano = objetivo_mano is not None
         lineas = [
             "Control: " + ("MANO" if hay_mano else "TECLADO (WASD)"),
@@ -112,6 +127,14 @@ class ControladorJuego:
         ]
 
         if not self.estado.pausado:
+            if self._consumir_disparo_tecla(ahora):
+                self.estado.disparar()
+                self._ultimo_disparo = ahora
+            elif hay_mano and not mano_abierta \
+                    and ahora - self._ultimo_disparo >= INTERVALO_DISPARO:
+                self.estado.disparar()
+                self._ultimo_disparo = ahora
+
             if hay_mano:                                   # 1) si hay mano, manda la mano
                 self.estado.nave.mover_hacia(*objetivo_mano)
             else:                                          # 2) si no, WASD
