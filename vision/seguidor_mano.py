@@ -29,6 +29,7 @@ GROSOR_LINEA = 2
 CRITERIOS_MEANSHIFT = (cv2.TERM_CRITERIA_COUNT | cv2.TERM_CRITERIA_EPS, 15, 2)
 KERNEL_PEQUENO = np.ones((5, 5), np.uint8)
 KERNEL_GRANDE = np.ones((15, 15), np.uint8)
+MULTIPLICADOR_ALTURA_CAJA_NEGRA_CARA=1.4
 
 NOMBRE_CASCADA = "haarcascade_frontalface_default.xml"
 
@@ -54,9 +55,8 @@ def tapar_cara_en_mascara(mascara_piel, cara):
     """Cuadrado negro sobre la cara y el cuello en la máscara de piel."""
     cara_x, cara_y, cara_ancho, cara_alto = cara
 
-    multiplicador_altura=1.1
     cv2.rectangle(mascara_piel, (cara_x, cara_y),
-                  (cara_x + cara_ancho, cara_y + int(cara_alto * multiplicador_altura)), 0, -1)
+                  (cara_x + cara_ancho, cara_y + int(cara_alto * MULTIPLICADOR_ALTURA_CAJA_NEGRA_CARA)), 0, -1)
 
 
 def pintar_cuadro_cara(imagen, cara):
@@ -360,7 +360,7 @@ class DetectorDeMano:
         texto_estado = "Sin mano"
         posicion = None
 
-        mascara_piel = calcular_mascara_piel(imagen,None)
+        mascara_piel = calcular_mascara_piel(imagen,self.__rango_color_cara)
 
         largo_mano = LARGO_MANO_POR_DEFECTO
         if self._ultima_cara is not None:
