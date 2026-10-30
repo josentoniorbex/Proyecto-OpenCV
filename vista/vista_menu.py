@@ -17,6 +17,9 @@ class VistaMenu:
 
         self._texto_centrado(canvas, menu.titulo, (ANCHO_VIRTUAL / 2, POSICION_Y_TITULO),
                              3.5, 8, COLOR_TITULO, ancho_ventana, alto_ventana)
+        if menu.subtitulo:
+            self._texto_centrado(canvas, menu.subtitulo, (ANCHO_VIRTUAL / 2, 300),
+                                 1.5, 3, COLOR_TEXTO, ancho_ventana, alto_ventana)
 
         for n, (x, y, ancho, alto) in enumerate(menu.botones):
             seleccionado = (n == menu.opcion)

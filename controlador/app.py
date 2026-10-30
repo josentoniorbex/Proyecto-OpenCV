@@ -7,7 +7,7 @@ import cv2
 
 from config import (NOMBRE_VENTANA, ANCHO_INICIAL, ALTO_INICIAL, FPS_OBJETIVO, MOSTRAR_CAMARA,
                     TITULO_JUEGO, TITULO_PAUSA, OPCIONES_MENU, OPCIONES_PAUSA,
-                    ACCION_JUGAR, ACCION_VOLVER_AL_MENU)
+                    ACCION_JUGAR, ACCION_VOLVER_AL_MENU, ACCION_FIN_PARTIDA)
 from modelo.estado_juego import EstadoJuego
 from modelo.menu import MenuModelo
 from vista.ventana import Ventana
@@ -126,9 +126,19 @@ class App:
         if self.estado == MENU:
             if accion == ACCION_JUGAR:
                 self.controlador_juego.reiniciar()
+                self.controlador_menu.modelo.titulo = TITULO_JUEGO
+                self.controlador_menu.modelo.subtitulo = None
                 self.estado = JUGANDO
             else:                                   # SALIR o ESC
                 return False
+
+        elif self.estado == JUGANDO and accion == ACCION_FIN_PARTIDA:
+            self.controlador_menu.reiniciar()
+            self.controlador_menu.modelo.titulo = "GAME OVER"
+            self.controlador_menu.modelo.subtitulo = (
+                f"Score: {self.controlador_juego.estado.score}"
+            )
+            self.estado = MENU
 
         elif self.estado == JUGANDO:                # solo llega ESC
             self.controlador_juego.pausar()

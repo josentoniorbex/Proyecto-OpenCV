@@ -2,4 +2,4 @@ from controlador.app import App
 
 
 if __name__ == "__main__":
-    App(True).ejecutar()
+    App(False).ejecutar()

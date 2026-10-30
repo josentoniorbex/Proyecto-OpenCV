@@ -2,7 +2,7 @@ import time
 
 from config import (ANCHO_VIRTUAL, ALTO_VIRTUAL, TECLA_ESC, ESC_PULSADO, MARGEN_MANO,
                     TECLAS_MOVIMIENTO, TIEMPO_TECLA_ACTIVA, INTERVALO_DISPARO,
-                    TECLA_ESPACIO)
+                    TECLA_ESPACIO, ACCION_FIN_PARTIDA)
 
 
 class ControladorJuego:
@@ -121,12 +121,13 @@ class ControladorJuego:
         objetivo_mano, mano_abierta, texto_camara = self._leer_mano()
         hay_mano = objetivo_mano is not None
         lineas = [
+            f"Score: {self.estado.score}",
             "Control: " + ("MANO" if hay_mano else "TECLADO (WASD)"),
             texto_camara,
             f"FPS: {self._fps:.1f}",
         ]
 
-        if not self.estado.pausado:
+        if not self.estado.pausado and not self.estado.game_over:
             if self._consumir_disparo_tecla(ahora):
                 self.estado.disparar()
                 self._ultimo_disparo = ahora
@@ -142,5 +143,7 @@ class ControladorJuego:
                 if dx or dy:
                     self.estado.nave.mover_direccion(dx, dy, delta_tiempo)
             self.estado.actualizar(delta_tiempo)
+            if self.estado.game_over:
+                self._accion = ACCION_FIN_PARTIDA
 
         return self.vista.dibujar(self.estado, ancho_ventana, alto_ventana, lineas)

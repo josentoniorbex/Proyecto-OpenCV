@@ -7,6 +7,7 @@ class MenuModelo:
 
     def __init__(self, titulo, opciones):
         self.titulo = titulo
+        self.subtitulo = None
         self.opciones = opciones
         self.opcion = 0
         self.botones = self._calcular_botones(len(opciones))
