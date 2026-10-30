@@ -27,10 +27,6 @@ class Nave(Entidad):
         dy: Dirección vertical (-1 arriba, 1 abajo, 0 quieto)
         delta_tiempo: Tiempo entre fotogramas para mantener velocidad constante.
         """
-
-        if dx and dy:       # en diagonal no va más rápido -> cos(45°) ≈ 0.7071
-            dx *= 0.7071
-            dy *= 0.7071
         
         self.x += dx * VELOCIDAD_TECLADO * delta_tiempo
         self.y += dy * VELOCIDAD_TECLADO * delta_tiempo

@@ -18,6 +18,8 @@ class ControladorJuego:
         self.seguidor_mano = seguidor_mano
         self.aviso_camara = aviso_camara
         self._tiempo_anterior = time.perf_counter()
+        self._ultimo_frame_fps = None
+        self._fps = 0.0
         self._ultima_pulsacion = {direccion: -1.0 for direccion in TECLAS_MOVIMIENTO}
         self._accion = None
 
@@ -25,6 +27,8 @@ class ControladorJuego:
     def reiniciar(self):
         self.estado.reiniciar()
         self._tiempo_anterior = time.perf_counter()
+        self._ultimo_frame_fps = None
+        self._fps = 0.0
         self._ultima_pulsacion = {direccion: -1.0 for direccion in TECLAS_MOVIMIENTO}
         self._accion = None
 
@@ -77,16 +81,29 @@ class ControladorJuego:
         objetivo = (x_normalizada * ANCHO_VIRTUAL, y_normalizada * ALTO_VIRTUAL)
         return objetivo, abierta, ("Mano abierta" if abierta else "Mano cerrada")
 
+    def calcularFPS(self,ahora):
+        if self._ultimo_frame_fps is not None:
+            periodo = ahora - self._ultimo_frame_fps
+        if periodo > 0:
+            fps_actual = 1 / periodo
+            self._fps = fps_actual if self._fps == 0 else 0.8 * self._fps + 0.2 * fps_actual
+        self._ultimo_frame_fps = ahora
+
     # ---------- bucle ----------
     def actualizar(self, ancho_ventana, alto_ventana):
         """Actualiza el modelo y devuelve la imagen del juego."""
         ahora = time.perf_counter()
         delta_tiempo = min(ahora - self._tiempo_anterior, 0.1)
         self._tiempo_anterior = ahora
+        self.calcularFPS(ahora)
 
         objetivo_mano, _, texto_camara = self._leer_mano()
         hay_mano = objetivo_mano is not None
-        lineas = ["Control: " + ("MANO" if hay_mano else "TECLADO (WASD)"), texto_camara]
+        lineas = [
+            "Control: " + ("MANO" if hay_mano else "TECLADO (WASD)"),
+            texto_camara,
+            f"FPS: {self._fps:.1f}",
+        ]
 
         if not self.estado.pausado:
             if hay_mano:                                   # 1) si hay mano, manda la mano

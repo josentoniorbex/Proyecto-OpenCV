@@ -1,6 +1,7 @@
 # APLICACIÓN: único bucle principal con una máquina de estados (MENU / JUGANDO / PAUSA).
 # Todo lo de ventanas y OpenCV ocurre en el hilo principal. Solo la cámara usa otro hilo.
 
+import threading
 import time
 import cv2
 
@@ -24,26 +25,32 @@ PAUSA = "PAUSA"
 class App:
     def __init__(self, usar_camara=True):
         self.ventana = Ventana(NOMBRE_VENTANA, ANCHO_INICIAL, ALTO_INICIAL)
-        self.seguidor, aviso_camara = self._crear_seguidor() if usar_camara else (None, "desactivada")
+        self.detector_de_mano, aviso_camara = (
+            self._crear_detector_de_mano() if usar_camara else (None, "desactivada")
+        )
 
         vista_menu = VistaMenu()
         self.controlador_menu = ControladorMenu(MenuModelo(TITULO_JUEGO, OPCIONES_MENU), vista_menu)
         self.controlador_pausa = ControladorMenu(MenuModelo(TITULO_PAUSA, OPCIONES_PAUSA), vista_menu)
-        self.controlador_juego = ControladorJuego(EstadoJuego(), VistaJuego(), self.seguidor, aviso_camara)
+        self.controlador_juego = ControladorJuego(
+            EstadoJuego(), VistaJuego(), self.detector_de_mano, aviso_camara
+        )
 
         self.estado = MENU
-        self._ultimo_frame = None
-        self._fps = 0.0
+        self.corriendo = True
+        self.frame_actual = None
+        self._tamano_ventana = (ANCHO_INICIAL, ALTO_INICIAL)
+        self._hilo_controlador = None
         self.ventana.poner_callback_raton(self._evento_raton)
 
     # ---------- preparación ----------
     @staticmethod
-    def _crear_seguidor():
-        seguidor = SeguidorMano()
-        if seguidor.iniciar():
-            return seguidor, None
+    def _crear_detector_de_mano():
+        detector_de_mano = SeguidorMano()
+        if detector_de_mano.iniciar():
+            return detector_de_mano, None
         print("Se jugará solo con el teclado (WASD).")
-        return None, seguidor.error
+        return None, detector_de_mano.error
 
     @property
     def controlador_activo(self):
@@ -57,54 +64,52 @@ class App:
         x_virtual, y_virtual = self.ventana.pixel_a_virtual(x_pixel, y_pixel)
         self.controlador_activo.raton(evento, x_virtual, y_virtual)
 
-    def _calcular_fps(self, ahora):
-        if self._ultimo_frame is not None:
-            periodo = ahora - self._ultimo_frame
-            if periodo > 0:
-                fps_actual = 1 / periodo
-                self._fps = fps_actual if self._fps == 0 else 0.8 * self._fps + 0.2 * fps_actual
-        self._ultimo_frame = ahora
-        return self._fps
-
     # ---------- bucle principal ----------
     def ejecutar(self):
+        self._hilo_controlador = threading.Thread(target=self._bucle_controlador, daemon=True)
+        self._hilo_controlador.start()
         try:
-            corriendo = True
-            while corriendo:
-                inicio = time.perf_counter()
-                fps = self._calcular_fps(inicio)
-
+            while self.corriendo:
                 if self.ventana.medir():
-                    imagen = self.controlador_activo.actualizar(self.ventana.ancho,
-                                                                self.ventana.alto)
-                    cv2.putText(imagen, f"FPS: {fps:.1f}",
-                                (imagen.shape[1] - 150, 35), cv2.FONT_HERSHEY_SIMPLEX,
-                                0.8, (0, 255, 0), 2)
-                    self.ventana.mostrar(imagen)
+                    self._tamano_ventana = (self.ventana.ancho, self.ventana.alto)
+                    if self.frame_actual is not None:
+                        self.ventana.mostrar(self.frame_actual)
                 self._mostrar_camara()
 
-                # Esperamos lo justo para ir a FPS_OBJETIVO
-                gastado_ms = (time.perf_counter() - inicio) * 1000
-                espera_ms = max(1, int(1000 / FPS_OBJETIVO - gastado_ms))
-                tecla = cv2.waitKey(espera_ms) & 0xFF
+                tecla = cv2.waitKey(1) & 0xFF
                 if tecla != 255:
                     self.controlador_activo.tecla(tecla)
 
                 if self.ventana.cerrada():
                     break
-                corriendo = self._procesar_accion(self.controlador_activo.consumir_accion())
+                self.corriendo = self._procesar_accion(
+                    self.controlador_activo.consumir_accion())
         finally:
-            if self.seguidor is not None:
-                self.seguidor.detener()
+            self.corriendo = False
+            if self._hilo_controlador is not None:
+                self._hilo_controlador.join()
+            if self.detector_de_mano is not None:
+                self.detector_de_mano.detener()
             self.ventana.cerrar()
 
+    def _bucle_controlador(self):
+        periodo_objetivo = 1 / FPS_OBJETIVO
+        while self.corriendo:
+            inicio = time.perf_counter()
+            imagen = self.controlador_activo.actualizar(*self._tamano_ventana)
+            self.frame_actual = imagen
+
+            restante = periodo_objetivo - (time.perf_counter() - inicio)
+            if restante > 0:
+                time.sleep(restante)
+
     def _mostrar_camara(self):
-        if MOSTRAR_CAMARA and self.seguidor is not None:
-            frame = self.seguidor.obtener_frame()
+        if MOSTRAR_CAMARA and self.detector_de_mano is not None:
+            frame = self.detector_de_mano.obtener_frame()
             if frame is not None:
                 cv2.imshow("webcam", frame)
 
-            mascara = self.seguidor.obtener_mascara()
+            mascara = self.detector_de_mano.obtener_mascara()
             if mascara is not None:
                 cv2.imshow("mascara", mascara)
 

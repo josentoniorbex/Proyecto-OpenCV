@@ -6,7 +6,7 @@ ANCHO_VIRTUAL = 1280
 ALTO_VIRTUAL = 720
 
 # ---------------- Ventana ----------------
-NOMBRE_VENTANA = "main"
+NOMBRE_VENTANA = "Juego"
 ANCHO_INICIAL = 960
 ALTO_INICIAL = 540
 FPS_OBJETIVO = 60
@@ -39,7 +39,7 @@ TECLAS_MOVIMIENTO = {
 }
 # OpenCV no sabe si una tecla sigue pulsada, solo recibe "pulsaciones". Se considera que una
 # dirección sigue activa este tiempo (en segundos) después de la última pulsación recibida.
-TIEMPO_TECLA_ACTIVA = 0.15
+TIEMPO_TECLA_ACTIVA = 0.1
 
 # ---------------- Nave ----------------
 ANCHO_NAVE = 60
