@@ -71,6 +71,12 @@ def pintar_cuadro_cara(imagen, cara):
 
 def calcular__rango_color_cara(imagen, cara, debug=True):
     """Rango (minimo, maximo) de color de piel, sacado de nariz y mejillas."""
+    # Se usa YCrCb y no HSV: en HSV la piel está en el rojo, donde el tono da la vuelta (179 -> 0),
+    # y obliga a calcular la media del tono con angulos haciendo calculos muy dificil.
+    # En YCrCb, Cr y Cb son números normales y el brillo (Y) queda libre, así que es más simple.
+    # BGR directo tampoco, ya que el color cambia mucho con la luz. Una mano en sombra tiene valores 
+    # de rojo, verde y azul muy distintos a la misma mano iluminada, así que habría que hacer reglas
+    # más complicadas para cubrir los dos casos. En YCrCb y Lab el brillo va separado del color, y eso resuelve el problema.
     cara_x, cara_y, cara_ancho, cara_alto = cara
     
     # 1. Calculamos las coordenadas exactas de la zona (nariz y mejillas)
@@ -85,6 +91,9 @@ def calcular__rango_color_cara(imagen, cara, debug=True):
         
     # 3. Recortamos la zona usando esas coordenadas
     zona = imagen[y1:y2, x1:x2]
+    # reshape es de numpy
+    # -1 para que calcule automáticamente las filas y 3 para mantener los 3 canales de color (Y, Cr, Cb)
+    # genera una lista con los 3 valores mencionados
     zona_ycrcb = cv2.cvtColor(zona, cv2.COLOR_BGR2YCrCb).reshape(-1, 3)
 
     tipico = np.median(zona_ycrcb, axis=0)           # la mediana ignora reflejos y sombras
