@@ -32,6 +32,8 @@ class App:
         self.controlador_juego = ControladorJuego(EstadoJuego(), VistaJuego(), self.seguidor, aviso_camara)
 
         self.estado = MENU
+        self._ultimo_frame = None
+        self._fps = 0.0
         self.ventana.poner_callback_raton(self._evento_raton)
 
     # ---------- preparación ----------
@@ -55,16 +57,29 @@ class App:
         x_virtual, y_virtual = self.ventana.pixel_a_virtual(x_pixel, y_pixel)
         self.controlador_activo.raton(evento, x_virtual, y_virtual)
 
+    def _calcular_fps(self, ahora):
+        if self._ultimo_frame is not None:
+            periodo = ahora - self._ultimo_frame
+            if periodo > 0:
+                fps_actual = 1 / periodo
+                self._fps = fps_actual if self._fps == 0 else 0.8 * self._fps + 0.2 * fps_actual
+        self._ultimo_frame = ahora
+        return self._fps
+
     # ---------- bucle principal ----------
     def ejecutar(self):
         try:
             corriendo = True
             while corriendo:
                 inicio = time.perf_counter()
+                fps = self._calcular_fps(inicio)
 
                 if self.ventana.medir():
                     imagen = self.controlador_activo.actualizar(self.ventana.ancho,
                                                                 self.ventana.alto)
+                    cv2.putText(imagen, f"FPS: {fps:.1f}",
+                                (imagen.shape[1] - 150, 35), cv2.FONT_HERSHEY_SIMPLEX,
+                                0.8, (0, 255, 0), 2)
                     self.ventana.mostrar(imagen)
                 self._mostrar_camara()
 
