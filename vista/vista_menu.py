@@ -3,14 +3,16 @@ import numpy as np
 
 from config import (ANCHO_VIRTUAL, ALTO_VIRTUAL, POSICION_Y_TITULO, COLOR_FONDO_MENU,
                     COLOR_BOTON, COLOR_BOTON_SELECCIONADO, COLOR_TEXTO,
-                    COLOR_TEXTO_SELECCIONADO, COLOR_TITULO)
+                    COLOR_TEXTO_SELECCIONADO, COLOR_TITULO,
+                    COLOR_CURSOR_NORMAL,COLOR_CURSOR_PRESIONADO)
 from vista.ventana import escalar_punto
 
 
 class VistaMenu:
     """Dibuja un MenuModelo. No cambia ningún dato."""
 
-    def dibujar(self, menu, ancho_ventana, alto_ventana, puntero=None):
+    def dibujar(self, menu, ancho_ventana, alto_ventana, puntero=None,
+                is_mano_abierta=True):
         canvas = np.full((alto_ventana, ancho_ventana, 3), COLOR_FONDO_MENU, dtype=np.uint8)
 
         self._texto_centrado(canvas, menu.titulo, (ANCHO_VIRTUAL / 2, POSICION_Y_TITULO),
@@ -28,14 +30,16 @@ class VistaMenu:
             self._texto_centrado(canvas, menu.opciones[n], (x + ancho / 2, y + alto / 2),
                                  1.6, 3, color_texto, ancho_ventana, alto_ventana)
         if puntero is not None:
-            self._dibujar_circulo(canvas,puntero,ancho_ventana,alto_ventana)
+            self._dibujar_cursor_circulo(canvas, puntero, ancho_ventana, alto_ventana, is_mano_abierta)
         return canvas
 
     @staticmethod
-    def _dibujar_circulo(canvas, centro_virtual, ancho_ventana, alto_ventana):
-        centro = escalar_punto(centro_virtual, ancho_ventana, alto_ventana)
+    def _dibujar_cursor_circulo(canvas, cursor_pos, ancho_ventana, alto_ventana,
+                         is_mano_abierta=True):
+        centro = escalar_punto(cursor_pos, ancho_ventana, alto_ventana)
         radio = max(6, round(12 * alto_ventana / ALTO_VIRTUAL))
-        cv2.circle(canvas, centro, radio, (0, 0, 255), -1)
+        color = COLOR_CURSOR_NORMAL if is_mano_abierta else COLOR_CURSOR_PRESIONADO
+        cv2.circle(canvas, centro, radio, color, -1)
 
     @staticmethod
     def _texto_centrado(canvas, texto, centro_virtual, tamano_virtual, grosor_virtual,

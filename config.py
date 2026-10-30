@@ -69,3 +69,9 @@ INDICE_CAMARA = 0
 MOSTRAR_CAMARA = True      # ventana auxiliar con la cámara para depurar
 MARGEN_MANO = 0.15         # la mano se mueve en [0.15, 0.85] del ancho de la cámara y eso
                            # se estira a todo el ancho del juego (así llegas a los bordes)
+
+
+# ---------------- Cursor  --------------------
+
+COLOR_CURSOR_NORMAL = (0, 0, 255)
+COLOR_CURSOR_PRESIONADO = (0, 165, 255)

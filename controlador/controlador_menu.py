@@ -14,11 +14,13 @@ class ControladorMenu:
         self.detector_de_mano = detector_de_mano
         self._accion = None
         self._puntero_mano = None
+        self._is_mano_abierta = True
         self._mano_abierta_previa = None
 
     def reiniciar(self):
         self.modelo.reiniciar()
         self._accion = None
+        self._is_mano_abierta = True
         self._mano_abierta_previa = None
 
     def tecla(self, tecla):
@@ -41,7 +43,8 @@ class ControladorMenu:
         """Devuelve la imagen del menú."""
         self._actualizar_control_mano()
         return self.vista.dibujar(
-            self.modelo, ancho_ventana, alto_ventana, self._puntero_mano
+            self.modelo, ancho_ventana, alto_ventana, self._puntero_mano,
+            self._is_mano_abierta
         )
 
     def _actualizar_control_mano(self):
@@ -50,11 +53,13 @@ class ControladorMenu:
             posicion, mano_abierta = self.detector_de_mano.obtener()
             if posicion is None:
                 self._puntero_mano = None
+                self._is_mano_abierta = True
                 self._mano_abierta_previa = None
             else:
                 x = min(max(posicion[0], 0.0), 1.0) * ANCHO_VIRTUAL
                 y = min(max(posicion[1], 0.0), 1.0) * ALTO_VIRTUAL
                 self._puntero_mano = (x, y)
+                self._is_mano_abierta = mano_abierta
                 boton = self._seleccionar_boton(x, y)
 
                 # Si antes tenía la mano cerrada y ahora la tengo abierta y además estoy en un boton
@@ -63,6 +68,7 @@ class ControladorMenu:
                 self._mano_abierta_previa = mano_abierta
         else:
             self._puntero_mano = None
+            self._is_mano_abierta = True
             self._mano_abierta_previa = None
 
     def _seleccionar_boton(self, x, y):
