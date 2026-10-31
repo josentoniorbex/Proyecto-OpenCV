@@ -1,6 +1,11 @@
 import random
 
-from config import ANCHO_VIRTUAL, CANTIDAD_ENEMIGOS, COOLDOWN_APARICION_MAX
+from config import (
+    ANCHO_VIRTUAL,
+    CANTIDAD_ENEMIGOS,
+    COOLDOWN_APARICION_MAX,
+    GAP_ENEMIGOS,
+)
 from modelo.nave import Nave
 from modelo.bala import Bala
 from modelo.enemigo import Enemigo
@@ -72,8 +77,8 @@ class EstadoJuego:
         posiciones_libres = [
             x for x in range(ANCHO_VIRTUAL - enemigo.ancho + 1)
             if not any(
-                x < otro.x + otro.ancho
-                and x + enemigo.ancho > otro.x
+                x < otro.x + otro.ancho + GAP_ENEMIGOS
+                and x + enemigo.ancho + GAP_ENEMIGOS > otro.x
                 and enemigo.y < otro.y + otro.alto
                 and enemigo.y + enemigo.alto > otro.y
                 for otro in self.enemigos
