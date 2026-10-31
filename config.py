@@ -45,15 +45,15 @@ TECLAS_MOVIMIENTO = {
 TIEMPO_TECLA_ACTIVA = 0.1
 
 # ---------------- Nave ----------------
-ANCHO_NAVE = 60
-ALTO_NAVE = 40
+ANCHO_NAVE = 80
+ALTO_NAVE = 60
 VELOCIDAD_NAVE = 1500.0    # unidades virtuales por segundo (lo rápido que persigue a la mano)
 VELOCIDAD_TECLADO = 600.0  # unidades virtuales por segundo con WASD
 MARGEN_INFERIOR_NAVE = 20
 
 # ---------------- Disparos ----------------
-ANCHO_BALA = 14
-ALTO_BALA = 28
+ANCHO_BALA = 20
+ALTO_BALA = 40
 VELOCIDAD_BALA = 900.0
 INTERVALO_DISPARO = 0.25
 

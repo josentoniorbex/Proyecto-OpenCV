@@ -17,6 +17,15 @@ class VistaJuego:
     def dibujar(self, estado, ancho_ventana, alto_ventana, lineas_info=()):
         canvas = np.full((alto_ventana, ancho_ventana, 3), COLOR_FONDO_JUEGO, dtype=np.uint8)
 
+        for estrella in estado.obtener_estrellas():
+            centro = escalar_punto(
+                (estrella.x, estrella.y), ancho_ventana, alto_ventana
+            )
+            radio_pantalla = max(
+                1, round(escalar_longitud(estrella.grosor, alto_ventana))
+            )
+            cv2.circle(canvas, centro, radio_pantalla, (255, 255, 255), -1)
+
         for entidad in estado.entidades():
             if isinstance(entidad, EntidadConImagen):
                 self._dibujar_imagen(canvas, entidad, ancho_ventana, alto_ventana)

@@ -2,6 +2,7 @@ import random
 
 from config import (
     ANCHO_VIRTUAL,
+    ALTO_VIRTUAL,
     CANTIDAD_ENEMIGOS,
     COOLDOWN_APARICION_MAX,
     GAP_ENEMIGOS,
@@ -10,6 +11,7 @@ from modelo.nave import Nave
 from modelo.bala import Bala
 from modelo.enemigo import Enemigo
 from modelo.explosion import Explosion
+from modelo.estrella import Estrella
 
 
 class EstadoJuego:
@@ -21,6 +23,17 @@ class EstadoJuego:
         self.balas = []
         self.explosiones = []
         self._reapariciones_pendientes = []
+        tamanos_estrellas = [1] * 80 + [2] * 30 + [3] * 10
+        random.shuffle(tamanos_estrellas)
+        self._estrellas = [
+            Estrella(
+                random.randint(0, ANCHO_VIRTUAL - 1),
+                random.randint(0, ALTO_VIRTUAL - 1),
+                grosor,
+                100 * grosor,
+            )
+            for grosor in tamanos_estrellas
+        ]
         self.pausado = False
         self.score = 0
         self.game_over = False
@@ -43,10 +56,13 @@ class EstadoJuego:
         if self.pausado or self.game_over:
             return
         self._actualizar_reapariciones(delta_tiempo)
+        for estrella in self._estrellas:
+            estrella.actualizar(delta_tiempo)
         self.nave.actualizar(delta_tiempo)
         for enemigo in self.enemigos:
             y_anterior = enemigo.y
             enemigo.actualizar(self.nave, delta_tiempo, self.enemigos)
+            # ha llegado al limite
             if enemigo.y < y_anterior:
                 self._colocar_enemigo_en_posicion_libre(enemigo)
         for bala in self.balas:
@@ -55,11 +71,9 @@ class EstadoJuego:
             explosion.actualizar(delta_tiempo)
 
         self._resolver_colisiones()
+        # Borro las balas que se salen de la pantalla y las explosiones que han terminado
         self.balas[:] = [bala for bala in self.balas if bala.y + bala.alto > 0]
-        self.explosiones[:] = [
-            explosion for explosion in self.explosiones
-            if explosion.tiempo_restante > 0
-        ]
+        self.explosiones[:] = [ explosion for explosion in self.explosiones if explosion.tiempo_restante > 0]
 
     def _actualizar_reapariciones(self, delta_tiempo):
         pendientes = []
@@ -127,3 +141,7 @@ class EstadoJuego:
     def entidades(self):
         """Todo lo que hay que dibujar."""
         return [self.nave, *self.enemigos, *self.balas, *self.explosiones]
+
+    def obtener_estrellas(self):
+        """Devuelve las estrellas del fondo para que la vista las dibuje."""
+        return self._estrellas
