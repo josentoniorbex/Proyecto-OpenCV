@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from config import COLOR_FONDO_JUEGO
+from config import ANCHO_VIRTUAL, COLOR_FONDO_JUEGO
 from modelo.entidad import EntidadConImagen
 from vista.ventana import escalar_punto, escalar_rect, escalar_longitud
 
@@ -36,8 +36,26 @@ class VistaJuego:
             self.dibujar_debug(canvas, estado, ancho_ventana, alto_ventana)
 
         for numero, linea in enumerate(lineas_info):
-            self._dibujar_texto(canvas, linea, (20, 40 + 40 * numero), 0.9, (0, 255, 0),
-                                ancho_ventana, alto_ventana)
+            if linea.startswith("Score:"):
+                tamano = escalar_longitud(0.9, alto_ventana)
+                grosor = max(1, round(escalar_longitud(2, alto_ventana)))
+                (ancho_texto, _), _ = cv2.getTextSize(
+                    linea, cv2.FONT_HERSHEY_SIMPLEX, tamano, grosor
+                )
+                posicion = (
+                    ancho_ventana - round(20 * ancho_ventana / ANCHO_VIRTUAL)
+                    - ancho_texto,
+                    round(escalar_longitud(40 + 40 * numero, alto_ventana)),
+                )
+                cv2.putText(
+                    canvas, linea, posicion, cv2.FONT_HERSHEY_SIMPLEX,
+                    tamano, (0, 255, 255), grosor,
+                )
+            else:
+                self._dibujar_texto(
+                    canvas, linea, (20, 40 + 40 * numero), 0.9, (0, 255, 0),
+                    ancho_ventana, alto_ventana,
+                )
         return canvas
 
     @staticmethod
