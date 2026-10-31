@@ -37,6 +37,10 @@ NOMBRE_CASCADA = "haarcascade_frontalface_default.xml"
 PIEL_MIN = (0, 138, 80)
 PIEL_MAX = (255, 175, 130)
 KERNEL_ELIPSE = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+# Tengo un problema con la pared con sombra. Voy a probar estos valores
+MARGEN_CR_INFERIOR = 1
+MARGEN_CR_SUPERIOR = 1
+MARGEN_CB = 10
 
 # =============================================================================
 # CARA
@@ -97,8 +101,8 @@ def calcular__rango_color_cara(imagen, cara, debug=True):
     zona_ycrcb = cv2.cvtColor(zona, cv2.COLOR_BGR2YCrCb).reshape(-1, 3)
 
     tipico = np.median(zona_ycrcb, axis=0)           # la mediana ignora reflejos y sombras
-    minimo = (0,   int(tipico[1]) - 8, int(tipico[2]) - 8)    # brillo (Y) libre, Cr y Cb ±8
-    maximo = (255, int(tipico[1]) + 8, int(tipico[2]) + 8)
+    minimo = (0,   int(tipico[1]) - MARGEN_CR_INFERIOR, int(tipico[2]) - MARGEN_CB)    # brillo (Y) libre, Cr y Cb ±8
+    maximo = (255, int(tipico[1]) + MARGEN_CR_SUPERIOR, int(tipico[2]) + MARGEN_CB)
     
     return minimo, maximo
 
@@ -264,10 +268,9 @@ class DetectorDeMano:
         self._camara = None
         self._hilo = None
         self._corriendo = False
-        self._lock = threading.Lock()
         self.error = None          # texto con el motivo si la cámara falla
 
-        # Resultado compartido con el hilo principal (protegido por el lock)
+        # Últimos resultados compartidos con el hilo principal
         self._posicion = None
         self._abierta = False
         self._frame = None
@@ -314,18 +317,15 @@ class DetectorDeMano:
     # ---------- lectura de resultados (hilo principal) ----------
     def obtener(self):
         """Devuelve (posicion, abierta). posicion = (x, y) normalizada o None si no hay mano."""
-        with self._lock:
-            return self._posicion, self._abierta
+        return self._posicion, self._abierta
 
     def obtener_mascara(self):
         """Última máscara de la mano (la 'retroproyeccion' de camarav3), o None."""
-        with self._lock:
-            return self._mascara
+        return self._mascara
 
     def obtener_frame(self):
         """Última imagen de la cámara con lo detectado dibujado (para depurar), o None."""
-        with self._lock:
-            return self._frame
+        return self._frame
 
     # ---------- hilo de la cámara ----------
     def _bucle(self):
@@ -341,18 +341,16 @@ class DetectorDeMano:
                 posicion = self._procesar(imagen)
                 abierta = self._solidez < UMBRAL_SOLIDEZ
 
-                with self._lock:
-                    self._posicion = posicion
-                    self._abierta = abierta
-                    self._frame = imagen
-                    self._mascara = self._mascara_mano
+                self._posicion = posicion
+                self._abierta = abierta
+                self._frame = imagen
+                self._mascara = self._mascara_mano
         except Exception as fallo:               # que no muera en silencio
             self.error = f"{type(fallo).__name__}: {fallo}"
             traceback.print_exc()
         finally:
             self._camara.release()
-            with self._lock:
-                self._posicion = None
+            self._posicion = None
 
     def _procesar(self, imagen):
         """Analiza un frame, dibuja sobre él y devuelve la posición normalizada o None."""
@@ -401,4 +399,3 @@ class DetectorDeMano:
         cv2.putText(imagen, f"{texto_estado}  ({self._solidez:.2f})", (20, 50),
                     cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
         return posicion
-
