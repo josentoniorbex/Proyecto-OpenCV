@@ -10,6 +10,7 @@ class Nave(EntidadConImagen):
     """Datos y reglas de la nave. Todo en unidades virtuales. No dibuja nada."""
 
     def __init__(self):
+        '''Crea la nave con su imagen y la coloca en su posición inicial.'''
         # Ruta, le indico, la ruta del archivo, parent sería 0 modelo y 1 proyecto, a partir de ahí entro
         imagenPath = DIRECTORIO_ASSETS / "nave01.png" 
         ruta_imagen = str(imagenPath)
@@ -18,6 +19,7 @@ class Nave(EntidadConImagen):
         self.reiniciar()
 
     def reiniciar(self):
+        '''Centra la nave horizontalmente y restablece su objetivo de movimiento.'''
         self.x = (ANCHO_VIRTUAL - self.ancho) / 2
         self.y = ALTO_VIRTUAL - self.alto - MARGEN_INFERIOR_NAVE
         self.objetivo_x = self.x
@@ -34,8 +36,12 @@ class Nave(EntidadConImagen):
         
         self.x += dx * VELOCIDAD_TECLADO * delta_tiempo
         self.y += dy * VELOCIDAD_TECLADO * delta_tiempo
+
+        # Limita la posición horizontal para que la nave no salga por los lados de la pantalla.
         self.x = min(max(self.x, 0), ANCHO_VIRTUAL - self.ancho)
+        # Limita la posición vertical para que la nave no salga por arriba ni por abajo.
         self.y = min(max(self.y, 0), ALTO_VIRTUAL - self.alto)
+        
         self.objetivo_x = self.x            # así no vuelve atrás si luego se usa la mano
         self.objetivo_y = self.y
 

@@ -18,6 +18,7 @@ class EstadoJuego:
     """Todo lo que existe en una partida. Aquí irán enemigos, balas, puntuación..."""
 
     def __init__(self):
+        '''Crea los objetos y valores iniciales que componen una partida.'''
         self.nave = Nave()
         self.enemigos = []
         self.balas = []
@@ -40,6 +41,7 @@ class EstadoJuego:
         self.reiniciar()
 
     def reiniciar(self):
+        '''Devuelve la partida a su estado inicial y coloca de nuevo a los enemigos.'''
         self.nave.reiniciar()
         self.enemigos = [Enemigo(indice) for indice in range(CANTIDAD_ENEMIGOS)]
         ancho_carril = ANCHO_VIRTUAL / CANTIDAD_ENEMIGOS
@@ -53,6 +55,7 @@ class EstadoJuego:
         self.game_over = False
 
     def actualizar(self, delta_tiempo):
+        '''Avanza los objetos de la partida y resuelve las colisiones del fotograma.'''
         if self.pausado or self.game_over:
             return
         self._actualizar_reapariciones(delta_tiempo)
@@ -76,6 +79,7 @@ class EstadoJuego:
         self.explosiones[:] = [ explosion for explosion in self.explosiones if explosion.tiempo_restante > 0]
 
     def _actualizar_reapariciones(self, delta_tiempo):
+        '''Reduce las esperas pendientes y añade los enemigos cuyo tiempo terminó.'''
         pendientes = []
         for tiempo_restante in self._reapariciones_pendientes:
             tiempo_restante -= delta_tiempo
@@ -88,6 +92,7 @@ class EstadoJuego:
         self._reapariciones_pendientes = pendientes
 
     def _colocar_enemigo_en_posicion_libre(self, enemigo):
+        '''Coloca al enemigo en una coordenada horizontal sin solaparse con otros.'''
         posiciones_libres = [
             x for x in range(ANCHO_VIRTUAL - enemigo.ancho + 1)
             if not any(
@@ -107,6 +112,7 @@ class EstadoJuego:
         self.balas.append(Bala(self.nave.x + self.nave.ancho / 2, self.nave.y))
 
     def _resolver_colisiones(self):
+        '''Elimina impactos, suma puntos, programa reapariciones y comprueba el fin.'''
         enemigos_destruidos = set()
         balas_usadas = set()
 

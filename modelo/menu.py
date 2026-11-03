@@ -6,6 +6,7 @@ class MenuModelo:
     """Datos de un menú: título, opciones, cuál está seleccionada y dónde están los botones."""
 
     def __init__(self, titulo, opciones):
+        '''Inicializa el título, las opciones y la posición de los botones del menú.'''
         self.titulo = titulo
         self.subtitulo = None
         self.opciones = opciones
@@ -14,15 +15,19 @@ class MenuModelo:
 
     @property
     def opcion_actual(self):
+        '''Devuelve el texto de la opción que está seleccionada actualmente.'''
         return self.opciones[self.opcion]
 
     def subir(self):
+        '''Mueve la selección a la opción anterior, volviendo al final si hace falta.'''
         self.opcion = (self.opcion - 1) % len(self.opciones)
 
     def bajar(self):
+        '''Mueve la selección a la opción siguiente, volviendo al inicio si hace falta.'''
         self.opcion = (self.opcion + 1) % len(self.opciones)
 
     def reiniciar(self):
+        '''Selecciona de nuevo la primera opción del menú.'''
         self.opcion = 0
 
     @staticmethod

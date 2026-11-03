@@ -2,6 +2,7 @@ class Entidad:
     """Cualquier objeto rectangular del juego. Todo en unidades virtuales."""
 
     def __init__(self, x, y, ancho, alto, color):
+        '''Guarda la posición, el tamaño y el color de una entidad rectangular.'''
         self.x = x
         self.y = y
         self.ancho = ancho
@@ -22,5 +23,6 @@ class EntidadConImagen(Entidad):
     """Entidad rectangular que se representa usando una imagen."""
 
     def __init__(self, x, y, ancho, alto, color, ruta_imagen):
+        '''Inicializa la entidad base y guarda la ruta de su imagen representativa.'''
         super().__init__(x, y, ancho, alto, color)
         self.ruta_imagen = ruta_imagen
