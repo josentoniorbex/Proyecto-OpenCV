@@ -11,10 +11,12 @@ class VistaJuego:
     """Dibuja el EstadoJuego con el tamaño real de la ventana. No cambia ningún dato."""
 
     def __init__(self):
+        '''Prepara la caché donde se guardarán las imágenes ya cargadas.'''
         # diccionario clave-valor, esto es para cargar las imagenes en memoria
         self._imagenes = {}
 
     def dibujar(self, estado, ancho_ventana, alto_ventana, lineas_info=()):
+        '''Dibuja el estado actual de la partida y devuelve la imagen completa.'''
         canvas = np.full((alto_ventana, ancho_ventana, 3), COLOR_FONDO_JUEGO, dtype=np.uint8)
 
         for estrella in estado.obtener_estrellas():
@@ -69,6 +71,7 @@ class VistaJuego:
             cv2.rectangle(canvas, esquina_1, esquina_2, (0, 255, 0), 2)
 
     def _dibujar_imagen(self, canvas, entidad, ancho_ventana, alto_ventana):
+        '''Carga o recupera el sprite de una entidad, lo ajusta y lo mezcla en el lienzo.'''
         esquina_1_entidad_pantalla_real, esquina_2_entidad_pantalla_real = escalar_rect(entidad.x, entidad.y, entidad.ancho, entidad.alto,
                                             ancho_ventana, alto_ventana)
         entidad_x1_pantalla, entidad_y1_pantalla = esquina_1_entidad_pantalla_real
@@ -143,6 +146,7 @@ class VistaJuego:
 
     @staticmethod
     def _dibujar_rect(canvas, entidad, ancho_ventana, alto_ventana):
+        '''Dibuja como rectángulo relleno una entidad que no tiene imagen.'''
         esquina_1, esquina_2 = escalar_rect(entidad.x, entidad.y, entidad.ancho, entidad.alto,
                                             ancho_ventana, alto_ventana)
         cv2.rectangle(canvas, esquina_1, esquina_2, entidad.color, -1)
@@ -150,6 +154,7 @@ class VistaJuego:
     @staticmethod
     def _dibujar_texto(canvas, texto, posicion_virtual, tamano_virtual, color,
                        ancho_ventana, alto_ventana):
+        '''Dibuja texto en el lienzo convirtiendo su posición y tamaño virtuales a píxeles.'''
         posicion = escalar_punto(posicion_virtual, ancho_ventana, alto_ventana)
         tamano = escalar_longitud(tamano_virtual, alto_ventana)
         grosor = max(1, round(escalar_longitud(2, alto_ventana)))

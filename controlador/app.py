@@ -24,6 +24,7 @@ PAUSA = "PAUSA"
 
 class App:
     def __init__(self, usar_camara=True):
+        '''Prepara la ventana, los controladores y los estados de la aplicación.'''
         self.ventana = Ventana(NOMBRE_VENTANA, ANCHO_INICIAL, ALTO_INICIAL)
         self.detector_de_mano, aviso_camara = (
             self._crear_detector_de_mano() if usar_camara else (None, "desactivada")
@@ -50,6 +51,7 @@ class App:
     # ---------- preparación ----------
     @staticmethod
     def _crear_detector_de_mano():
+        '''Inicia el detector de mano o devuelve el motivo por el que no está disponible.'''
         detector_de_mano = DetectorDeMano()
         if detector_de_mano.iniciar():
             return detector_de_mano, None
@@ -58,6 +60,7 @@ class App:
 
     @property
     def controlador_activo(self):
+        '''Devuelve el controlador correspondiente al estado actual de la aplicación.'''
         if self.estado == JUGANDO:
             return self.controlador_juego
         if self.estado == PAUSA:
@@ -65,11 +68,13 @@ class App:
         return self.controlador_menu
 
     def _evento_raton(self, evento, x_pixel, y_pixel, flags, parametro):
+        '''Convierte la posición del ratón a coordenadas virtuales y la envía al controlador.'''
         x_virtual, y_virtual = self.ventana.pixel_a_virtual(x_pixel, y_pixel)
         self.controlador_activo.raton(evento, x_virtual, y_virtual)
 
     # ---------- bucle principal ----------
     def ejecutar(self):
+        '''Ejecuta el bucle principal y libera los recursos al terminar.'''
         self._hilo_controlador = threading.Thread(target=self._bucle_controlador, daemon=True)
         self._hilo_controlador.start()
         try:
@@ -97,6 +102,7 @@ class App:
             self.ventana.cerrar()
 
     def _bucle_controlador(self):
+        '''Actualiza el controlador activo a la frecuencia objetivo y guarda cada fotograma.'''
         periodo_objetivo = 1 / FPS_OBJETIVO
         while self.corriendo:
             inicio = time.perf_counter()
@@ -108,6 +114,7 @@ class App:
                 time.sleep(restante)
 
     def _mostrar_camara(self):
+        '''Muestra las imágenes auxiliares de la cámara cuando la depuración está activada.'''
         if MOSTRAR_CAMARA and self.detector_de_mano is not None:
             frame = self.detector_de_mano.obtener_frame()
             if frame is not None:

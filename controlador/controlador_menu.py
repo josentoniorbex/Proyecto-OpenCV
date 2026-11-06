@@ -9,6 +9,7 @@ class ControladorMenu:
     Cuando el jugador elige algo, deja la acción guardada para que la lea la App."""
 
     def __init__(self, modelo, vista, detector_de_mano=None):
+        '''Conecta el modelo y la vista del menú con las entradas del jugador.'''
         self.modelo = modelo
         self.vista = vista
         self.detector_de_mano = detector_de_mano
@@ -18,12 +19,14 @@ class ControladorMenu:
         self._mano_abierta_previa = None
 
     def reiniciar(self):
+        '''Restablece la selección y limpia la acción pendiente del menú.'''
         self.modelo.reiniciar()
         self._accion = None
         self._is_mano_abierta = True
         self._mano_abierta_previa = None
 
     def tecla(self, tecla):
+        '''Actualiza la selección o registra la acción correspondiente a una tecla.'''
         if tecla in (ord('w'), ord('W')):
             self.modelo.subir()
         elif tecla in (ord('s'), ord('S')):
@@ -48,6 +51,7 @@ class ControladorMenu:
         )
 
     def _actualizar_control_mano(self):
+        '''Actualiza el cursor y detecta si un gesto selecciona una opción del menú.'''
         # si hay detector de mano y además no hay errores al abrir la camara
         if self.detector_de_mano is not None and not self.detector_de_mano.error:
             posicion, mano_abierta = self.detector_de_mano.obtener()
@@ -72,6 +76,7 @@ class ControladorMenu:
             self._mano_abierta_previa = None
 
     def _seleccionar_boton(self, x, y):
+        '''Selecciona y devuelve el botón que contiene el punto virtual, si existe.'''
         for numero, (boton_x, boton_y, ancho, alto) in enumerate(self.modelo.botones):
             if boton_x <= x <= boton_x + ancho and boton_y <= y <= boton_y + alto:
                 self.modelo.opcion = numero
@@ -79,5 +84,6 @@ class ControladorMenu:
         return None
 
     def consumir_accion(self):
+        '''Devuelve la acción pendiente y la borra para que no se repita.'''
         accion, self._accion = self._accion, None
         return accion

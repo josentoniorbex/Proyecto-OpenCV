@@ -64,6 +64,7 @@ def tapar_cara_en_mascara(mascara_piel, cara):
 
 
 def pintar_cuadro_cara(imagen, cara):
+    '''Dibuja sobre la imagen un rectángulo que marca la cara detectada.'''
     cara_x, cara_y, cara_ancho, cara_alto = cara
     cv2.rectangle(imagen, (cara_x, cara_y),
                   (cara_x + cara_ancho, cara_y + cara_alto), (255, 0, 0), GROSOR_LINEA)
@@ -244,6 +245,7 @@ def suavizar_caja(caja_anterior, ventana_mano):
 
 
 def pintar_mano(imagen, caja_mano):
+    '''Dibuja el rectángulo de seguimiento y el centro de la mano sobre la imagen.'''
     x, y, ancho, alto = caja_mano.astype(int)
     cv2.rectangle(imagen, (x, y), (x + ancho, y + alto), COLOR_CAJA_MANO, GROSOR_LINEA)
     cv2.circle(imagen, (x + ancho // 2, y + alto // 2), 6, (0, 0, 255), -1)
@@ -264,6 +266,7 @@ class DetectorDeMano:
     """
 
     def __init__(self, indice_camara=INDICE_CAMARA):
+        '''Inicializa el estado de captura y seguimiento para la cámara indicada.'''
         self._indice_camara = indice_camara
         self._camara = None
         self._hilo = None
@@ -310,6 +313,7 @@ class DetectorDeMano:
         return True
 
     def detener(self):
+        '''Detiene el hilo de captura y espera brevemente a que termine.'''
         self._corriendo = False
         if self._hilo is not None:
             self._hilo.join(timeout=2)
@@ -329,6 +333,7 @@ class DetectorDeMano:
 
     # ---------- hilo de la cámara ----------
     def _bucle(self):
+        '''Lee fotogramas de la cámara, analiza la mano y guarda los resultados recientes.'''
         try:
             while self._corriendo:
                 lectura_correcta, imagen = self._camara.read()

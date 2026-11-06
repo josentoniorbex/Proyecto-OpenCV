@@ -25,6 +25,7 @@ class Ventana:
     """Envuelve la ventana de OpenCV: tamaño, proporción 16:9, mostrar y detectar cierre."""
 
     def __init__(self, nombre, ancho, alto):
+        '''Crea y configura una ventana redimensionable de OpenCV.'''
         self.nombre = nombre
         self.ancho = ancho
         self.alto = alto
@@ -46,9 +47,11 @@ class Ventana:
         return True
 
     def mostrar(self, imagen):
+        '''Muestra la imagen recibida en la ventana.'''
         cv2.imshow(self.nombre, imagen)
 
     def cerrada(self):
+        '''Indica si el usuario ha cerrado la ventana.'''
         return cv2.getWindowProperty(self.nombre, cv2.WND_PROP_VISIBLE) < 1
 
     def pixel_a_virtual(self, x_pixel, y_pixel):
@@ -57,7 +60,9 @@ class Ventana:
                 y_pixel * ALTO_VIRTUAL / self.alto)
 
     def poner_callback_raton(self, funcion):
+        '''Registra la función que recibirá los eventos del ratón en esta ventana.'''
         cv2.setMouseCallback(self.nombre, funcion)
 
     def cerrar(self):
+        '''Cierra las ventanas de OpenCV abiertas por la aplicación.'''
         cv2.destroyAllWindows()

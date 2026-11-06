@@ -14,6 +14,7 @@ class ControladorJuego:
     aviso_camara:  texto que se enseña en pantalla si la cámara no pudo arrancar."""
 
     def __init__(self, estado, vista, seguidor_mano=None, aviso_camara=None):
+        '''Inicializa el vínculo entre la partida, su vista y los controles disponibles.'''
         self.estado = estado
         self.vista = vista
         self.seguidor_mano = seguidor_mano
@@ -28,6 +29,7 @@ class ControladorJuego:
 
     # ---------- ciclo de la partida ----------
     def reiniciar(self):
+        '''Reinicia la partida y los temporizadores y entradas del controlador.'''
         self.estado.reiniciar()
         self._tiempo_anterior = time.perf_counter()
         self._ultimo_frame_fps = None
@@ -38,15 +40,18 @@ class ControladorJuego:
         self._ultimo_disparo = float("-inf")
 
     def pausar(self):
+        '''Pausa la partida y descarta cualquier disparo de teclado pendiente.'''
         self.estado.pausado = True
         self._disparo_tecla_pendiente = False
 
     def reanudar(self):
+        '''Reanuda la partida y reinicia la referencia temporal del siguiente fotograma.'''
         self.estado.pausado = False
         self._tiempo_anterior = time.perf_counter()   # evita un salto de tiempo al volver
 
     # ---------- entradas ----------
     def tecla(self, tecla):
+        '''Registra una acción de teclado, un disparo o la dirección pulsada.'''
         if tecla == TECLA_ESC:
             self._accion = ESC_PULSADO
         elif tecla == TECLA_ESPACIO:
@@ -57,9 +62,11 @@ class ControladorJuego:
                     self._ultima_pulsacion[direccion] = time.perf_counter()
 
     def raton(self, evento, x_virtual, y_virtual):
+        '''Recibe eventos del ratón; el juego no asigna acciones a estos eventos.'''
         pass
 
     def _consumir_disparo_tecla(self, ahora):
+        '''Consume un disparo pendiente cuando ya terminó el intervalo entre disparos.'''
         if self._disparo_tecla_pendiente \
                 and ahora - self._ultimo_disparo >= INTERVALO_DISPARO:
             self._disparo_tecla_pendiente = False
@@ -67,12 +74,14 @@ class ControladorJuego:
         return False
 
     def consumir_accion(self):
+        '''Devuelve la acción pendiente del controlador y la limpia.'''
         accion, self._accion = self._accion, None
         return accion
 
     def _direccion_teclado(self, ahora):
         """(dx, dy) en -1, 0, 1 según las teclas pulsadas hace poco."""
         def activa(direccion):
+            '''Indica si la tecla de esta dirección sigue dentro de su tiempo activo.'''
             return ahora - self._ultima_pulsacion[direccion] < TIEMPO_TECLA_ACTIVA
         dx = int(activa("derecha")) - int(activa("izquierda"))
         dy = int(activa("abajo")) - int(activa("arriba"))

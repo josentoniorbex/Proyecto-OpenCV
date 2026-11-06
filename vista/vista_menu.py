@@ -13,6 +13,7 @@ class VistaMenu:
 
     def dibujar(self, menu, ancho_ventana, alto_ventana, puntero=None,
                 is_mano_abierta=True):
+        '''Crea y devuelve la imagen del menú, sus botones y el cursor opcional.'''
         canvas = np.full((alto_ventana, ancho_ventana, 3), COLOR_FONDO_MENU, dtype=np.uint8)
 
         self._texto_centrado(canvas, menu.titulo, (ANCHO_VIRTUAL / 2, POSICION_Y_TITULO),
@@ -39,6 +40,7 @@ class VistaMenu:
     @staticmethod
     def _dibujar_cursor_circulo(canvas, cursor_pos, ancho_ventana, alto_ventana,
                          is_mano_abierta=True):
+        '''Dibuja el cursor como un círculo cuyo color depende del estado de la mano.'''
         centro = escalar_punto(cursor_pos, ancho_ventana, alto_ventana)
         radio = max(6, round(12 * alto_ventana / ALTO_VIRTUAL))
         color = COLOR_CURSOR_NORMAL if is_mano_abierta else COLOR_CURSOR_PRESIONADO
