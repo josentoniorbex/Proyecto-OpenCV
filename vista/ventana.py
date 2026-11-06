@@ -32,7 +32,7 @@ class Ventana:
         cv2.namedWindow(nombre, cv2.WINDOW_NORMAL)
         cv2.resizeWindow(nombre, ancho, alto)
 
-    def medir(self):
+    def actualizar_dimensiones(self):
         """Lee el tamaño real de la ventana y corrige la proporción.
         Devuelve False si la ventana está minimizada (no hay nada que dibujar)."""
         _, _, ancho, alto = cv2.getWindowImageRect(self.nombre)

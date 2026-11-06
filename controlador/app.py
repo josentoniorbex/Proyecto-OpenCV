@@ -79,7 +79,7 @@ class App:
         self._hilo_controlador.start()
         try:
             while self.corriendo:
-                if self.ventana.medir():
+                if self.ventana.actualizar_dimensiones():
                     self._tamano_ventana = (self.ventana.ancho, self.ventana.alto)
                     if self.frame_actual is not None:
                         self.ventana.mostrar(self.frame_actual)

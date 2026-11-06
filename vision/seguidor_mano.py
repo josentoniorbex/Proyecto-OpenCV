@@ -27,8 +27,6 @@ UMBRAL_SOLIDEZ = 0.6          # por debajo = abierta, por encima = cerrada
 COLOR_CAJA_MANO = (0, 255, 255)
 GROSOR_LINEA = 2
 CRITERIOS_MEANSHIFT = (cv2.TERM_CRITERIA_COUNT | cv2.TERM_CRITERIA_EPS, 15, 2)
-KERNEL_PEQUENO = np.ones((5, 5), np.uint8)
-KERNEL_GRANDE = np.ones((15, 15), np.uint8)
 MULTIPLICADOR_ALTURA_CAJA_NEGRA_CARA=1.4
 
 NOMBRE_CASCADA = "haarcascade_frontalface_default.xml"
@@ -41,6 +39,13 @@ KERNEL_ELIPSE = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
 MARGEN_CR_INFERIOR = 1
 MARGEN_CR_SUPERIOR = 1
 MARGEN_CB = 10
+
+
+# --- Corte de la muñeca, separar_mano ---
+# Es lo que tiene que estrecharse una fila para considerarla muñeca.
+UMBRAL_MUNECA = 0.90
+# distancia mínima desde la punta de los dedos antes de empezar a buscar la muñeca.
+FACTOR_LARGO_MINIMO_MANO = 1.0
 
 # =============================================================================
 # CARA
@@ -171,38 +176,58 @@ def elegir_bloque_mano(mascara_piel, ventana_mano):
 
 
 def separar_mano(bloque_piel, largo_mano=None):
-    """Corta el brazo detectando el estrechamiento de la muñeca por filas."""
+    """Corta el brazo detectando el estrechamiento de la muñeca por filas.
+
+    Entrada:  bloque_piel -> imagen True/False con True solo en los píxeles del bloque de piel.
+    Salida:   máscara 0/255 con la misma forma, con el brazo borrado (de la muñeca hacia abajo).
+
+    Supone la mano con los dedos hacia arriba y el brazo hacia abajo.
+    Idea: recorrer la mano de arriba abajo y parar en el PRIMER estrechamiento
+    tras la palma. Así da igual que el antebrazo sea más ancho que la mano.
+    """
+    # La mano en formato imagen 0/255 (es lo que se devuelve, tras borrarle el brazo)
     mascara_mano = (bloque_piel * 255).astype(np.uint8)
-    
-    # 1. Calcular la "anchura" de piel en cada fila (sumando los píxeles True/1)
+
+    # 1. Anchura de piel de cada fila: suma de los píxeles True de esa fila.
+    #    anchura_por_fila[y] = cuántos píxeles de piel hay en la fila y.
     anchura_por_fila = bloque_piel.sum(axis=1)
-    
+
+    # Si no hay ningún píxel de piel no hay nada que cortar
     if not anchura_por_fila.any():
         return mascara_mano
-        
+
+    # 2. Punta de la mano: la primera fila (de arriba abajo) que tiene piel
     filas_con_piel = np.nonzero(anchura_por_fila)[0]
     y_punta = filas_con_piel.min()
-    
-    # 2. Encontrar la palma: la fila más ancha desde la punta hacia abajo
-    y_palma = y_punta + anchura_por_fila[y_punta:].argmax()
-    anchura_maxima = anchura_por_fila[y_palma]
-    
-    # 3. Buscar la muñeca iterando desde la palma hacia abajo
-    # Consideramos que es la muñeca cuando la anchura se reduce a un 90% de la palma
-    umbral_muneca = anchura_maxima * 0.90
-    limite_muneca = y_palma
-    
-    for y in range(y_palma, len(anchura_por_fila)):
-        if anchura_por_fila[y] < umbral_muneca:
-            limite_muneca = y
-            break
-    else:
-        # Si el brazo es muy gordo y nunca se estrecha, usamos un límite de seguridad
-        limite_muneca = y_palma + int(anchura_maxima * 0.8)
 
-    # 4. Cortar todo lo que esté por debajo del límite
-    mascara_mano[limite_muneca:, :] = 0
-    
+    # 3. Recorrido desde la punta hacia abajo
+    anchura_maxima = 0      # anchura de la fila más ancha vista hasta ahora (la palma)
+    y_palma = y_punta       # fila donde se vio esa anchura máxima
+    limite_muneca = None    # fila donde se corta; se queda en None si no se encuentra muñeca
+
+    for y in range(y_punta, len(anchura_por_fila)):
+        anchura = anchura_por_fila[y]
+
+        if anchura > anchura_maxima:
+            # Fila más ancha que todas las anteriores: la palma "crece" hasta aquí
+            anchura_maxima = anchura
+            y_palma = y
+
+        elif (anchura < anchura_maxima * UMBRAL_MUNECA
+              and y - y_punta > anchura_maxima * FACTOR_LARGO_MINIMO_MANO):
+            # Dos condiciones a la vez para dar la fila por muñeca:
+            #  a) la fila se ha estrechado por debajo del umbral respecto a la palma, y
+            #  b) ya hemos bajado lo bastante desde la punta (si no, estaríamos aún en
+            #     los dedos y un hueco entre dedos nos cortaría la mano por error).
+            limite_muneca = y
+            break           # primer estrechamiento: no se mira más abajo (el antebrazo)
+
+    # 4. Borrar todo lo que está desde la muñeca hacia abajo (el brazo).
+    #    Si nunca se encontró estrechamiento (limite_muneca sigue en None),
+    #    no se corta nada y se devuelve el bloque entero.
+    if limite_muneca is not None:
+        mascara_mano[limite_muneca:, :] = 0
+
     return mascara_mano
 
 
