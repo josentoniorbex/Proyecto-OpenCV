@@ -36,8 +36,8 @@ PIEL_MIN = (0, 138, 80)
 PIEL_MAX = (255, 175, 130)
 KERNEL_ELIPSE = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
 # Tengo un problema con la pared con sombra. Voy a probar estos valores
-MARGEN_CR_INFERIOR = 1
-MARGEN_CR_SUPERIOR = 1
+MARGEN_CR_INFERIOR = 6
+MARGEN_CR_SUPERIOR = 6
 MARGEN_CB = 10
 
 
